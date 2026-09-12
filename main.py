@@ -106,3 +106,10 @@ interactions_df = pd.DataFrame(interactions)
 
 print("Number of interactions:", len(interactions_df))
 print(interactions_df.head(10).to_string())
+
+interactions_df.to_csv(
+    f"{BRAND}_interactions.csv",
+    index=False
+)
+
+print("Saved:", len(interactions_df), "interactions")
