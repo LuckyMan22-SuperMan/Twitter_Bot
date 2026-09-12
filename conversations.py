@@ -1,4 +1,11 @@
 import pandas as pd
+import re
+
+def clean_text(text):
+    text = re.sub(r'@\w+', '', text)       # remove @mentions
+    text = re.sub(r'https?://\S+', '', text)  # remove URLs
+    text = re.sub(r'\s+', ' ', text)       # normalize spaces
+    return text.strip()
 
 BRAND = "AppleSupport"
 
@@ -75,6 +82,11 @@ for item in conversations:
 
 conversations_df = pd.DataFrame(conversation_rows)
 
+conversations_df["clean_conversation"] = (
+    conversations_df["conversation_text"]
+    .apply(clean_text)
+)
+
 print("\nConversation dataset shape:", conversations_df.shape)
 print("\nColumns:", conversations_df.columns.tolist())
 
@@ -108,3 +120,16 @@ print(
     .str.len()
     .describe()
 )
+
+shortest = conversations_df.sort_values(
+    by="clean_conversation",
+    key=lambda x: x.str.len()
+).head(15)
+
+print("\n" + "=" * 80)
+print("10 SHORTEST CONVERSATIONS")
+print("=" * 80)
+
+for _, row in shortest.iterrows():
+    print("\n" + "-" * 80)
+    print(row["clean_conversation"])
