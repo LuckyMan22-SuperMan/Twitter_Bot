@@ -36,16 +36,49 @@ def get_conversation(tweet_id):
 
     return conversation
 
-customer_tweet_id = interactions_df.iloc[0]["customer_tweet_id"]
+conversations = []
 
-conversation = get_conversation(customer_tweet_id)
+for _, row in interactions_df.iterrows():
+
+    customer_tweet_id = row["customer_tweet_id"]
+
+    conversation = get_conversation(customer_tweet_id)
+
+    conversations.append({
+        "customer_tweet_id": customer_tweet_id,
+        "brand_tweet_id": row["brand_tweet_id"],
+        "conversation": conversation
+    })
+
+print("Number of conversations:", len(conversations))
+conversation_rows = []
+
+for item in conversations:
+
+    messages = []
+
+    for tweet in item["conversation"]:
+
+        sender = "Customer" if tweet["inbound"] else BRAND
+
+        messages.append(
+            f"{sender}: {tweet['text']}"
+        )
+
+    conversation_text = "\n".join(messages)
+
+    conversation_rows.append({
+        "customer_tweet_id": item["customer_tweet_id"],
+        "brand_tweet_id": item["brand_tweet_id"],
+        "conversation_text": conversation_text
+    })
+
+conversations_df = pd.DataFrame(conversation_rows)
+
+print("\nConversation dataset shape:", conversations_df.shape)
+print("\nColumns:", conversations_df.columns.tolist())
 
 print("\n" + "=" * 80)
-print("FULL CONVERSATION")
+print("FIRST CONVERSATION")
 print("=" * 80)
-
-for tweet in conversation:
-    sender = "Customer" if tweet["inbound"] else BRAND
-
-    print(f"\n{sender}:")
-    print(tweet["text"])
+print(conversations_df.iloc[0]["conversation_text"])
