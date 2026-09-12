@@ -1,6 +1,16 @@
 import pandas as  pd
 
-df=pd.read_csv("twcs.csv")
+needed_columns = [
+    "tweet_id",
+    "author_id",
+    "inbound",
+    "in_response_to_tweet_id",
+    "response_tweet_id",
+    "text"
+]
+
+df = pd.read_csv("twcs.csv", usecols=needed_columns)
+
 
 #print(df.shape)
 print(df.columns.tolist())
