@@ -19,4 +19,18 @@ print(
     ].head(20)
 )
 
-tweet_lookup= df.set_index("tweet_id").to_dict("index")
+tweet_lookup= df.set_index("tweet_id").to_dict("index")     #dict to find any tweet info
+
+def get_conversation(tweet_id, tweet_lookup):
+    conversations=[]
+    current_id=tweet_id
+
+    while pd.notna(current_id):
+        tweet=tweet_lookup[current_id]
+
+        conversations.append(tweet)
+
+        current_id=tweet["in_response_to_tweet_id"]
+    conversations.reverse()
+
+    return conversations
