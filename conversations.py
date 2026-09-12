@@ -89,3 +89,22 @@ conversations_df.to_csv(
 )
 
 print("\nSaved:", len(conversations_df), "conversations")
+
+print("\n" + "=" * 80)
+print("BASIC DATA CHECKS")
+print("=" * 80)
+
+print("\nTotal conversations:", len(conversations_df))
+
+print("\nMissing values:")
+print(conversations_df.isna().sum())
+
+print("\nDuplicate conversations:")
+print(conversations_df["conversation_text"].duplicated().sum())
+
+print("\nConversation lengths:")
+print(
+    conversations_df["conversation_text"]
+    .str.len()
+    .describe()
+)
