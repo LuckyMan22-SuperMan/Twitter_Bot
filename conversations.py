@@ -82,3 +82,10 @@ print("\n" + "=" * 80)
 print("FIRST CONVERSATION")
 print("=" * 80)
 print(conversations_df.iloc[0]["conversation_text"])
+
+conversations_df.to_csv(
+    "AppleSupport_conversations.csv",
+    index=False
+)
+
+print("\nSaved:", len(conversations_df), "conversations")
