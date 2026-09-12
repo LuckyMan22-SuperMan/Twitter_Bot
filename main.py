@@ -19,18 +19,34 @@ print(
     ].head(20)
 )
 
-tweet_lookup= df.set_index("tweet_id").to_dict("index")     #dict to find any tweet info
+# tweet_lookup= df.set_index("tweet_id").to_dict("index")     #dict to find any tweet info
 
-def get_conversation(tweet_id, tweet_lookup):
-    conversations=[]
-    current_id=tweet_id
+# def get_conversation(tweet_id, tweet_lookup):
+#     conversations=[]
+#     current_id=tweet_id
 
-    while pd.notna(current_id):
-        tweet=tweet_lookup[current_id]
+#     while pd.notna(current_id) and current_id in tweet_lookup:
+#         tweet=tweet_lookup[current_id]
 
-        conversations.append(tweet)
+#         conversations.append(tweet)
 
-        current_id=tweet["in_response_to_tweet_id"]
-    conversations.reverse()
+#         current_id=tweet["in_response_to_tweet_id"]
+#     conversations.reverse()
 
-    return conversations
+#     return conversations
+# tweet_id=df.iloc[0]["tweet_id"]   #get tweet id of 1st BRAND text
+# conversations=get_conversation(tweet_id,tweet_lookup)
+
+# for c in conversations:
+#     print(c["author_id"], ":", c["text"])
+
+print("Total tweets:", len(df))
+print(f"{BRAND} tweets:", len(brand_df))
+
+print(brand_df[[
+    "tweet_id",
+    "author_id",
+    "in_response_to_tweet_id",
+    "response_tweet_id",
+    "text"
+]].head(10).to_string())
