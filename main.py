@@ -52,14 +52,41 @@ for c in conversations:
     #print(c["author_id"], ":", c["text"])
     print(sender, ":", c["text"])
 
-print("Total tweets:", len(df))
-print(f"{BRAND} tweets:", len(brand_df))
+# print("Total tweets:", len(df))
+# print(f"{BRAND} tweets:", len(brand_df))
 
-print("LOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOL")
+# print("LOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOLOL")
+# customer_df = df[df["inbound"] == True]
+# print(
+#     customer_df[
+#         ["tweet_id", "response_tweet_id", "text"]
+#     ].head(20).to_string()
+# )
+def get_response_ids(value):
+    if pd.isna(value):
+        return []
+
+    return [int(x.strip()) for x in str(value).split(",")] #print(get_response_ids("9,6,10")) gives a list with 9, 6, 10
+
 customer_df = df[df["inbound"] == True]
-print(
-    customer_df[
-        ["tweet_id", "response_tweet_id", "text"]
-    ].head(20).to_string()
-)
 
+for _, customer in customer_df.iterrows():
+
+    if pd.notna(customer["response_tweet_id"]):
+        print("CUSTOMER:")
+        print(customer["text"])
+
+        response_ids = get_response_ids(
+            customer["response_tweet_id"]
+        )
+
+        print("RESPONSE IDS:", response_ids)
+
+        for response_id in response_ids:
+            response = tweet_lookup.get(response_id)
+
+            if response is not None:
+                print("AUTHOR:", response["author_id"])
+                print("RESPONSE:", response["text"])
+
+        break
