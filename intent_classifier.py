@@ -16,7 +16,7 @@ from sklearn.metrics import (
 # 1. LOAD DATA
 # ============================================
 
-df = pd.read_csv("AppleSupport_50_labeled_final.csv")
+df = pd.read_csv("AppleSupport_500_labeled_final.csv")
 
 print("Dataset shape:", df.shape)
 print("\nIntent distribution:")
