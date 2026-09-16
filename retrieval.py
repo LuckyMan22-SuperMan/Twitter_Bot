@@ -61,6 +61,28 @@ def extract_brand_response(conversation):
 
     return response.strip()
 
+def is_useful_response(response):
+
+    response = response.lower().strip()
+
+    if not response:
+        return False
+
+    generic_phrases = [
+        "support via twitter",
+        "available in english",
+        "preferred language",
+        "contact us for help",
+        "get help at",
+        "join us",
+        "follow us",
+    ]
+
+    for phrase in generic_phrases:
+        if phrase in response:
+            return False
+
+    return True
 
 df["brand_response"] = df["clean_conversation"].apply(
     extract_brand_response
@@ -74,6 +96,11 @@ df["brand_response"] = df["clean_conversation"].apply(
 retrieval_df = df[
     df["brand_response"].str.strip() != ""
 ].copy()
+
+retrieval_df = retrieval_df[
+    retrieval_df["brand_response"].apply(is_useful_response)
+].copy()
+
 
 print(
     "Cases with AppleSupport response:",
