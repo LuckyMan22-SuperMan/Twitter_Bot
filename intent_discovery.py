@@ -66,3 +66,28 @@ for cluster_number in range(NUM_CLUSTERS):
     print(
         ", ".join(top_words)
     )
+
+# --------------------------------------------------
+# Show example customer messages from each cluster
+# --------------------------------------------------
+
+df_valid = df[valid_mask].copy()
+
+df_valid["cluster"] = clusters
+
+print("\n" + "=" * 80)
+print("EXAMPLE MESSAGES BY CLUSTER")
+print("=" * 80)
+
+for cluster_number in range(NUM_CLUSTERS):
+
+    print(
+        f"\n\n{'=' * 30} CLUSTER {cluster_number} {'=' * 30}"
+    )
+
+    examples = df_valid[
+        df_valid["cluster"] == cluster_number
+    ]["clean_customer_text"].head(8)
+
+    for example in examples:
+        print("-", example)
