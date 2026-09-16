@@ -124,3 +124,25 @@ print(
     len(inspection_df),
     "messages"
 )
+
+print("\n" + "=" * 80)
+print("MESSAGES PER CLUSTER")
+print("=" * 80)
+
+print(
+    inspection_df["cluster"]
+    .value_counts()
+    .sort_index()
+)
+for cluster_number in range(8):
+
+    print("\n" + "=" * 80)
+    print(f"CLUSTER {cluster_number}")
+    print("=" * 80)
+
+    cluster_messages = inspection_df[
+        inspection_df["cluster"] == cluster_number
+    ]["clean_customer_text"]
+
+    for message in cluster_messages:
+        print("-", message)
