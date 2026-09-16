@@ -23,3 +23,20 @@ vectorizer = TfidfVectorizer(
 X = vectorizer.fit_transform(texts)
 
 print("TF-IDF matrix shape:", X.shape)
+
+# --------------------------------------------------
+# Cluster customer messages
+# --------------------------------------------------
+
+NUM_CLUSTERS = 8
+
+kmeans = KMeans(
+    n_clusters=NUM_CLUSTERS,
+    random_state=42,
+    n_init=10
+)
+
+clusters = kmeans.fit_predict(X)
+
+print("\nCluster sizes:")
+print(pd.Series(clusters).value_counts().sort_index())
