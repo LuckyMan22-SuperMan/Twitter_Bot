@@ -134,7 +134,7 @@ print(
     .value_counts()
     .sort_index()
 )
-for cluster_number in range(8):
+for cluster_number in [5,6]:
 
     print("\n" + "=" * 80)
     print(f"CLUSTER {cluster_number}")
