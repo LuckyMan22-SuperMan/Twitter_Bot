@@ -91,3 +91,36 @@ for cluster_number in range(NUM_CLUSTERS):
 
     for example in examples:
         print("-", example)
+
+        # --------------------------------------------------
+# Save clustered messages for manual inspection
+# --------------------------------------------------
+
+df_valid = df[valid_mask].copy()
+
+df_valid["cluster"] = clusters
+
+inspection_df = df_valid[
+    [
+        "customer_tweet_id",
+        "clean_customer_text",
+        "cluster"
+    ]
+].reset_index(drop=True)
+
+inspection_df.insert(
+    0,
+    "index",
+    inspection_df.index
+)
+
+inspection_df.to_csv(
+    "AppleSupport_intent_inspection.csv",
+    index=False
+)
+
+print(
+    "\nSaved intent inspection file:",
+    len(inspection_df),
+    "messages"
+)
