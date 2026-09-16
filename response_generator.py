@@ -1,3 +1,4 @@
+from retrieval import retrieve_similar_cases
 import os
 from dotenv import load_dotenv
 from google import genai
@@ -94,16 +95,27 @@ Instructions:
    evidence.
 
 4. You may combine compatible information from
-   multiple historical responses.
+   multiple historical responses, but only when
+   the information is directly relevant to the
+   customer's current problem.
 
-5. If the evidence is insufficient to provide a
+5. Prioritize the most relevant evidence based on
+   the customer's specific message and predicted
+   intent. Do not include information simply
+   because it appears in one of the retrieved cases.
+
+6. If a historical response asks for information
+   that is not relevant to the current customer's
+   problem, do not include that question.
+
+7. If the evidence is insufficient to provide a
    useful and grounded response, return exactly:
    INSUFFICIENT_EVIDENCE
 
-6. Keep the response concise and professional,
+8. Keep the response concise and professional,
    like a real customer-support message.
 
-7. If the historical responses mainly ask the
+9. If the historical responses mainly ask the
    customer for information, it is acceptable to
    ask for similar information rather than invent
    a technical solution.
@@ -144,37 +156,31 @@ INSUFFICIENT_EVIDENCE.
 
 if __name__ == "__main__":
 
+    # ----------------------------------------
+    # Test customer message
+    # ----------------------------------------
+
     customer_message = "My iPhone battery is draining really fast"
+
+    # For now, manually provide the predicted intent.
+    # We will connect the classifier next.
     predicted_intent = "battery_issue"
 
-    # Temporary test data
-    import pandas as pd
+    # ----------------------------------------
+    # Retrieve historical cases
+    # ----------------------------------------
 
-    retrieved_cases = pd.DataFrame([
-        {
-            "clean_customer_text":
-                "Please fix the battery issues in Ios 11! "
-                "I have and my battery life has become even worse",
+    retrieved_cases = retrieve_similar_cases(
+        customer_message,
+        predicted_intent,
+        top_k=3
+    )
 
-            "brand_response":
-                "We want to make sure you have a working battery. "
-                "Have you had a chance to update to the latest 11.1?",
+    print("\nRetrieved cases:", len(retrieved_cases))
 
-            "similarity": 0.2399
-        },
-        {
-            "clean_customer_text":
-                "why is my battery life short? I updated to 11.1, "
-                "my battery is poor.",
-
-            "brand_response":
-                "Let’s work together on this situation. To clarify, "
-                "did this start after updating to iOS 11.1? "
-                "Also, which device are you using?",
-
-            "similarity": 0.2205
-        }
-    ])
+    # ----------------------------------------
+    # Generate response
+    # ----------------------------------------
 
     result = generate_response(
         customer_message,
