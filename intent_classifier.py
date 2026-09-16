@@ -83,6 +83,16 @@ model.fit(X_train, y_train)
 
 print("\nModel training completed!")
 
+def predict_intent(message):
+    prediction = model.predict([message])[0]
+    probabilities = model.predict_proba([message])[0]
+
+    confidence = probabilities.max()
+
+    return prediction, confidence
+
+
+
 
 # ============================================
 # 6. PREDICT
