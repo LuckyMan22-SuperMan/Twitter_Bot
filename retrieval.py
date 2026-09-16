@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -16,20 +17,72 @@ df["clean_customer_text"] = (
     .astype(str)
 )
 
+df["clean_conversation"] = (
+    df["clean_conversation"]
+    .fillna("")
+    .astype(str)
+)
+
 df["intent"] = df["intent"].fillna("other")
 
 
-# ============================================
-# 2. REMOVE EMPTY MESSAGES
-# ============================================
-
-df = df[df["clean_customer_text"].str.strip() != ""].copy()
+# Remove empty customer messages
+df = df[
+    df["clean_customer_text"].str.strip() != ""
+].copy()
 
 print("Usable historical messages:", len(df))
 
 
 # ============================================
-# 3. CREATE TF-IDF REPRESENTATION
+# 2. EXTRACT APPLESUPPORT RESPONSE
+# ============================================
+
+def extract_brand_response(conversation):
+
+    """
+    Extract the AppleSupport response from
+    the historical conversation.
+    """
+
+    pattern = r"AppleSupport:\s*(.*?)(?=\s+Customer:|$)"
+
+    matches = re.findall(
+        pattern,
+        conversation,
+        flags=re.DOTALL
+    )
+
+    if not matches:
+        return ""
+
+    # Combine responses if AppleSupport replied multiple times
+    response = " ".join(matches)
+
+    return response.strip()
+
+
+df["brand_response"] = df["clean_conversation"].apply(
+    extract_brand_response
+)
+
+
+# ============================================
+# 3. KEEP ONLY CASES WITH A BRAND RESPONSE
+# ============================================
+
+retrieval_df = df[
+    df["brand_response"].str.strip() != ""
+].copy()
+
+print(
+    "Cases with AppleSupport response:",
+    len(retrieval_df)
+)
+
+
+# ============================================
+# 4. CREATE TF-IDF
 # ============================================
 
 vectorizer = TfidfVectorizer(
@@ -38,13 +91,18 @@ vectorizer = TfidfVectorizer(
     ngram_range=(1, 2)
 )
 
-X = vectorizer.fit_transform(df["clean_customer_text"])
+X = vectorizer.fit_transform(
+    retrieval_df["clean_customer_text"]
+)
 
-print("TF-IDF matrix shape:", X.shape)
+print(
+    "Retrieval TF-IDF shape:",
+    X.shape
+)
 
 
 # ============================================
-# 4. RETRIEVAL FUNCTION
+# 5. RETRIEVAL FUNCTION
 # ============================================
 
 def retrieve_similar_cases(
@@ -53,44 +111,75 @@ def retrieve_similar_cases(
     top_k=5
 ):
 
-    # Filter by predicted intent
-    filtered_df = df[
-        df["intent"] == predicted_intent
+    # ----------------------------------------
+    # Filter by intent
+    # ----------------------------------------
+
+    filtered_df = retrieval_df[
+        retrieval_df["intent"] == predicted_intent
     ].copy()
 
     if len(filtered_df) == 0:
         return pd.DataFrame()
 
-    # Get vectors for the filtered cases
+
+    # ----------------------------------------
+    # Get TF-IDF vectors for filtered cases
+    # ----------------------------------------
+
     filtered_indices = filtered_df.index
 
-    filtered_vectors = X[
-        [df.index.get_loc(i) for i in filtered_indices]
+    filtered_positions = [
+        retrieval_df.index.get_loc(index)
+        for index in filtered_indices
     ]
 
-    # Convert query to TF-IDF
-    query_vector = vectorizer.transform([query])
+    filtered_vectors = X[
+        filtered_positions
+    ]
 
+
+    # ----------------------------------------
+    # Convert query into TF-IDF
+    # ----------------------------------------
+
+    query_vector = vectorizer.transform(
+        [query]
+    )
+
+
+    # ----------------------------------------
     # Calculate cosine similarity
+    # ----------------------------------------
+
     similarities = cosine_similarity(
         query_vector,
         filtered_vectors
     )[0]
 
-    # Add similarity scores
+
+    # ----------------------------------------
+    # Add similarity score
+    # ----------------------------------------
+
     filtered_df["similarity"] = similarities
 
+
+    # ----------------------------------------
     # Sort by similarity
+    # ----------------------------------------
+
     results = filtered_df.sort_values(
         "similarity",
         ascending=False
     ).head(top_k)
 
+
     return results
 
 
 # ============================================
-# 5. TEST RETRIEVAL
+# 6. TEST RETRIEVAL
 # ============================================
 
 query = "My iPhone battery is draining really fast"
@@ -104,6 +193,10 @@ results = retrieve_similar_cases(
 )
 
 
+# ============================================
+# 7. DISPLAY RESULTS
+# ============================================
+
 print("\nQuery:")
 print(query)
 
@@ -112,14 +205,22 @@ print(predicted_intent)
 
 print("\nSimilar historical cases:")
 
-for _, row in results.iterrows():
 
-    print("\n--------------------------------")
-    print("Customer:")
-    print(row["clean_customer_text"])
+if results.empty:
 
-    print("\nSimilarity:")
-    print(round(row["similarity"], 4))
+    print("No historical cases found.")
 
-    print("\nHistorical conversation:")
-    print(row["clean_conversation"])
+else:
+
+    for _, row in results.iterrows():
+
+        print("\n" + "=" * 50)
+
+        print("Customer:")
+        print(row["clean_customer_text"])
+
+        print("\nSimilarity:")
+        print(round(row["similarity"], 4))
+
+        print("\nAppleSupport response:")
+        print(row["brand_response"])
