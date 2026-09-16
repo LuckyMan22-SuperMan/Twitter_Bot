@@ -1,4 +1,6 @@
 from retrieval import retrieve_similar_cases
+from intent_classifier import predict_intent
+
 import os
 from dotenv import load_dotenv
 from google import genai
@@ -32,6 +34,10 @@ def generate_response(
     historical AppleSupport responses as evidence.
     """
 
+    # ----------------------------------------
+    # Check for historical evidence
+    # ----------------------------------------
+
     if retrieved_cases.empty:
         return {
             "response": "",
@@ -62,7 +68,7 @@ Similarity:
 """
 
     # ----------------------------------------
-    # Build prompt
+    # Build grounded prompt
     # ----------------------------------------
 
     prompt = f"""
@@ -91,8 +97,8 @@ Instructions:
    supported by the evidence.
 
 3. Do not claim that AppleSupport previously said
-   something unless it is actually present in the
-   evidence.
+   something unless it is actually present in
+   the evidence.
 
 4. You may combine compatible information from
    multiple historical responses, but only when
@@ -132,8 +138,8 @@ INSUFFICIENT_EVIDENCE.
     print("Sending request to Gemini...")
 
     interaction = client.interactions.create(
-    model="gemini-3.6-flash",
-    input=prompt
+        model="gemini-3.6-flash",
+        input=prompt
     )
 
     generated_text = interaction.output_text.strip()
@@ -154,17 +160,33 @@ INSUFFICIENT_EVIDENCE.
     }
 
 
+# ============================================
+# 3. END-TO-END TEST
+# ============================================
+
 if __name__ == "__main__":
 
     # ----------------------------------------
-    # Test customer message
+    # Customer message
     # ----------------------------------------
 
-    customer_message = "My iPhone battery is draining really fast"
+    customer_message = (
+        "My iPhone battery is draining really fast"
+    )
 
-    # For now, manually provide the predicted intent.
-    # We will connect the classifier next.
-    predicted_intent = "battery_issue"
+    # ----------------------------------------
+    # Predict intent
+    # ----------------------------------------
+
+    predicted_intent, confidence = predict_intent(
+        customer_message
+    )
+
+    print("\nPredicted intent:")
+    print(predicted_intent)
+
+    print("Intent confidence:")
+    print(round(confidence, 4))
 
     # ----------------------------------------
     # Retrieve historical cases
