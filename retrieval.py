@@ -135,7 +135,7 @@ print(
 def retrieve_similar_cases(
     query,
     predicted_intent,
-    top_k=5
+    top_k=3
 ):
 
     # ----------------------------------------
@@ -191,6 +191,11 @@ def retrieve_similar_cases(
 
     filtered_df["similarity"] = similarities
 
+    # Remove duplicate customer messages
+    filtered_df = filtered_df.drop_duplicates(
+    subset=["clean_customer_text"]
+)
+
 
     # ----------------------------------------
     # Sort by similarity
@@ -216,7 +221,7 @@ predicted_intent = "battery_issue"
 results = retrieve_similar_cases(
     query,
     predicted_intent,
-    top_k=5
+    top_k=3
 )
 
 
